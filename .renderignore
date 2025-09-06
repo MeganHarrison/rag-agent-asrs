@@ -1,0 +1,80 @@
+# Ignore unnecessary files for Render deployment
+
+# Development and test files
+check_*.py
+test_*.py
+setup_*.py
+!setup.py
+fm_global_*.py
+main.py
+ingest.py
+
+# Documentation
+*.md
+!README.md
+docs/
+examples/
+
+# Development environment
+venv/
+.venv/
+env/
+.env/
+*.env.local
+*.env.development
+
+# Cache and temporary files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git files
+.git/
+.gitignore
+.github/
+
+# Test directories
+tests/
+test/
+
+# SQL and data files
+sql/
+data/
+documents/
+*.csv
+*.json
+*.sql
+
+# Notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Logs
+*.log
+logs/
+
+# API directory (if using alternative)
+api/
+
+# Keep only essential deployment files
+!rag_agent/
+!requirements.txt
+!render.yaml
+!start_server.py
+!server.py
+!setup.py
+!runtime.txt
