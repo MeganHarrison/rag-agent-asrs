@@ -2,9 +2,7 @@ services:
   - type: web
     name: fm-global-asrs-expert
     runtime: python
-    buildCommand: |
-      pip install --no-cache-dir -r requirements.txt &&
-      echo "Build completed successfully"
+    buildCommand: pip install --no-cache-dir -r requirements.txt
     startCommand: python start_server.py
     healthCheckPath: /
     envVars:
