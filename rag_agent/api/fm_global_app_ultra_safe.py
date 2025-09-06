@@ -52,45 +52,98 @@ def get_fallback_response(query: str) -> str:
     """Get a fallback response when agent is unavailable."""
     query_lower = query.lower()
     
-    if "aisle" in query_lower or "width" in query_lower:
-        return """Aisle width requirements typically depend on:
-- Class I-III Commodities: 6 ft (1.8 m) minimum
-- Class IV Commodities: 8 ft (2.4 m) minimum
-- Plastics Group A: 10 ft (3.0 m) minimum
-- Consider crane/SRM clearance requirements
-- Check local fire codes for additional requirements"""
+    if "sprinkler" in query_lower or "k-factor" in query_lower or "pressure" in query_lower:
+        return """**FM Global 8-34 Sprinkler Requirements:**
+
+**Shuttle ASRS with Closed-Top Containers:**
+- K-factor: K-11.2 or K-16.8 sprinklers typically required
+- Spacing: 2.5-5.0 feet depending on rack depth and commodity
+- Pressure: Varies by system design and storage height
+- Ceiling protection: Required at warehouse ceiling level
+- In-rack protection: Generally NOT required for closed-top containers
+
+**Key Sprinkler Guidelines:**
+- 4-inch minimum clearance between storage and sprinkler deflectors
+- Wet systems preferred where temperature permits (fewer sprinklers needed)
+- Enhanced protection may be required for heights over 20 feet
+- Consider discharge density requirements based on commodity classification
+
+Consult FM Global 8-34 tables for specific K-factor and pressure requirements for your configuration."""
     
-    elif "sprinkler" in query_lower:
-        return """Sprinkler system requirements generally include:
-- ESFR sprinklers for high-challenge storage
-- In-rack sprinklers for narrow aisles
-- Design density based on commodity classification
-- Consider ceiling height and storage configuration
-- Consult FM Global 8-34 for specific design criteria"""
-    
-    elif "seismic" in query_lower or "bracing" in query_lower:
-        return """Seismic design requirements typically include:
-- Longitudinal bracing at 40 ft maximum spacing
-- Transverse bracing for each rack row
-- Base plate anchorage with minimum 4 anchors
-- Positive mechanical beam-to-column connections
-- Design for local seismic zone requirements"""
+    elif "container" in query_lower or "open" in query_lower or "closed" in query_lower:
+        return """**Container Type Impact on Sprinkler Protection:**
+
+**Closed-Top Containers (Recommended):**
+- Eliminates need for in-rack sprinklers in most cases
+- Ceiling-level sprinklers only (K-11.2 or K-16.8)
+- Significant cost savings: $150,000-$300,000 typical
+- Simpler system maintenance and testing
+
+**Open-Top or Combustible Containers:**
+- Requires in-rack sprinkler protection
+- Multiple sprinkler levels may be needed
+- Higher water demand and system complexity
+- Consider upgrading to closed-top containers for cost optimization
+
+**System Optimization:** Converting to closed-top containers often provides the highest ROI for ASRS fire protection cost reduction."""
     
     elif "cost" in query_lower or "optimization" in query_lower:
-        return """Cost optimization strategies include:
-- Use in-rack sprinklers to reduce ceiling density
-- Optimize aisle widths for storage density
-- Zone-based protection for mixed commodities
-- Consider ESFR where ceiling height permits
-- Strategic rack configuration to minimize sprinkler levels"""
+        return """**ASRS Sprinkler System Cost Optimization Strategies:**
+
+**High-Impact Savings:**
+1. **Use Closed-Top Containers:** Eliminates in-rack sprinklers ($150K-$300K savings)
+2. **Wet vs. Dry Systems:** Wet systems require 25-40% fewer sprinklers if temperature permits
+3. **Height Optimization:** Keeping storage under 20ft reduces enhanced protection needs
+
+**Medium-Impact Savings:**
+1. **Strategic Aisle Widths:** Balance storage density with sprinkler coverage
+2. **Zone-Based Protection:** Different protection levels for different commodities
+3. **System Type Selection:** ESFR vs. standard sprinklers based on ceiling height
+
+**Typical Cost Breakdown:**
+- Standard ASRS sprinkler system: $200K-$500K
+- Enhanced systems (high storage/open containers): $400K-$800K
+- Optimized systems (closed containers, proper design): $150K-$350K
+
+Focus on container type first - it provides the largest cost impact."""
+    
+    elif "aisle" in query_lower or "width" in query_lower or "spacing" in query_lower:
+        return """**FM Global 8-34 Spacing Requirements:**
+
+**Aisle Width Requirements:**
+- Standard commodities: 6-8 ft minimum for sprinkler coverage
+- High-challenge storage: 8-10 ft may be required
+- Consider crane/SRM clearance in addition to fire protection needs
+
+**Sprinkler Spacing Guidelines:**
+- Ceiling sprinklers: Maximum 100-130 sq ft coverage per sprinkler
+- In-rack sprinklers (if required): 2.5-5.0 ft spacing depending on rack depth
+- Clearance to storage: 4-inch minimum from sprinkler deflectors
+
+**Optimization Note:** Wider aisles can sometimes reduce sprinkler density requirements, but balance with storage efficiency needs."""
     
     else:
-        return """For specific FM Global 8-34 requirements:
-- Verify commodity classification first
-- Consider storage height and configuration
-- Review fire protection options
-- Check seismic requirements for your zone
-- Consult the full FM Global 8-34 standard for detailed guidance"""
+        return """**FM Global 8-34 ASRS Sprinkler Protection Overview:**
+
+**System Requirements:**
+- K-factor selection: K-11.2 or K-16.8 based on commodity and height
+- Pressure requirements: Varies by system design (typically 15-50 psi)
+- Coverage: Based on rack configuration and container type
+- Water supply: Adequate flow and pressure for design demand
+
+**Key Considerations:**
+- Container type has the largest impact on system requirements
+- Ceiling height affects enhancement needs
+- Commodity classification determines base protection level
+- System type (wet/dry) affects sprinkler quantity needed
+
+**Cost Optimization Priority:**
+1. Evaluate closed-top containers first
+2. Optimize storage height (under 20ft if possible)  
+3. Consider wet systems where temperature permits
+4. Review aisle widths for sprinkler coverage efficiency
+
+For specific requirements, consult FM Global 8-34 tables and figures or contact a qualified fire protection engineer."""
 
 async def try_load_agent():
     """Try to load the full agent system."""
