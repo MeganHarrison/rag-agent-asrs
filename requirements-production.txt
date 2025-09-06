@@ -1,4 +1,4 @@
-# Core dependencies only - for faster builds
+# Core dependencies
 anthropic
 asyncpg
 fastapi
@@ -14,24 +14,34 @@ python-multipart
 rich
 psutil
 
-# Required for database operations
+# Database and vector operations
 pgvector
-numpy  # Required by pgvector
+numpy
+psycopg2-binary
+sqlalchemy
 
-# Optional - add back if needed
-# beautifulsoup4
-# langchain
-# langchain-community
-# langchain-core
-# langchain-text-splitters
-# pandas
-# psycopg2-binary
-# requests
-# sqlalchemy
-# tiktoken
-# groq
-# nltk
+# Text processing and utilities
+beautifulsoup4
+requests
+tiktoken
+pyyaml
+
+# LangChain ecosystem (might be needed for chunking/splitting)
+langchain
+langchain-community
+langchain-core
+langchain-text-splitters
+
+# Data processing
+pandas
+
+# Additional LLM providers
+groq
+
+# NLP tools (lighter weight)
+nltk
+
+# Skip these heavy packages unless absolutely needed:
 # cohere
-# sentence-transformers  # HUGE - avoid if possible
-# scikit-learn
-# pyyaml
+# sentence-transformers  # 400MB+ download
+# scikit-learn  # Large, only if ML features needed
