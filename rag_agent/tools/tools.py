@@ -52,7 +52,9 @@ async def semantic_search(
         embedding_str = '[' + ','.join(map(str, query_embedding)) + ']'
         
         # Execute semantic search
-        async with deps.db_pool.acquire() as conn:
+        # Get database pool lazily
+        db_pool = await deps.get_db_pool()
+        async with db_pool.acquire() as conn:
             results = await conn.fetch(
                 """
                 SELECT * FROM match_chunks($1::vector, $2)
@@ -118,7 +120,9 @@ async def hybrid_search(
         embedding_str = '[' + ','.join(map(str, query_embedding)) + ']'
         
         # Execute hybrid search
-        async with deps.db_pool.acquire() as conn:
+        # Get database pool lazily
+        db_pool = await deps.get_db_pool()
+        async with db_pool.acquire() as conn:
             results = await conn.fetch(
                 """
                 SELECT * FROM hybrid_search($1::vector, $2, $3, $4)

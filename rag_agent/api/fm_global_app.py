@@ -36,8 +36,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global dependencies - initialized at startup
+# Global dependencies - lazy initialized
 deps: Optional[AgentDependencies] = None
+
+
+async def get_or_create_deps() -> AgentDependencies:
+    """Get or create dependencies with lazy initialization."""
+    global deps
+    if deps is None:
+        try:
+            settings = load_settings()
+            deps = AgentDependencies(settings=settings)
+            # Don't initialize database until first request
+            print("✅ FM Global dependencies created (lazy)")
+        except Exception as e:
+            print(f"⚠️ Using minimal configuration: {e}")
+            # Create minimal deps without database
+            deps = AgentDependencies(settings=load_settings())
+    return deps
 
 
 class FMGlobalQuery(BaseModel):
@@ -57,26 +73,8 @@ class FMGlobalResponse(BaseModel):
     asrs_topics: List[str] = []
 
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize dependencies on startup."""
-    global deps
-    try:
-        settings = load_settings()
-        deps = AgentDependencies(settings=settings)
-        await deps.initialize()
-        print("✅ FM Global 8-34 ASRS Expert API initialized successfully")
-    except Exception as e:
-        print(f"❌ Failed to initialize FM Global Expert: {e}")
-        raise
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on shutdown."""
-    global deps
-    if deps:
-        await deps.cleanup()
+# Removed startup/shutdown events - using lazy initialization instead
+# This prevents network connection attempts during container build
 
 
 @app.get("/")
@@ -88,10 +86,8 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Detailed health check."""
-    global deps
-    
-    if not deps:
-        raise HTTPException(status_code=503, detail="Service not initialized")
+    # Don't try to connect during health checks
+    deps = await get_or_create_deps()
     
     try:
         settings = deps.settings
@@ -123,10 +119,7 @@ async def health_check():
 @app.post("/chat", response_model=FMGlobalResponse)
 async def chat_sync(query: FMGlobalQuery):
     """Synchronous chat endpoint for FM Global queries."""
-    global deps
-    
-    if not deps:
-        raise HTTPException(status_code=503, detail="Service not initialized")
+    deps = await get_or_create_deps()
     
     try:
         session_id = str(uuid.uuid4())
@@ -177,10 +170,12 @@ async def chat_sync(query: FMGlobalQuery):
 
 async def stream_fm_global_response(query: FMGlobalQuery) -> AsyncGenerator[str, None]:
     """Stream FM Global agent responses."""
-    global deps
-    
-    if not deps:
-        yield f"data: {json.dumps({'error': 'Service not initialized'})}\n\n"
+    try:
+        deps = await get_or_create_deps()
+    except Exception as e:
+        yield f"data: {json.dumps({'error': f'Initialization failed: {str(e)}'})}
+
+"
         return
     
     try:

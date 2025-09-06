@@ -22,17 +22,12 @@ class AgentDependencies:
     query_history: list = field(default_factory=list)
     
     async def initialize(self):
-        """Initialize external connections."""
+        """Initialize external connections - now lazy."""
         if not self.settings:
             self.settings = load_settings()
         
-        # Initialize database pool
-        if not self.db_pool:
-            self.db_pool = await asyncpg.create_pool(
-                self.settings.database_url,
-                min_size=self.settings.db_pool_min_size,
-                max_size=self.settings.db_pool_max_size
-            )
+        # Don't connect to database immediately - wait for first use
+        # This prevents connection attempts during container build
         
         # Initialize OpenAI client (or compatible provider)
         if not self.openai_client:
@@ -40,6 +35,24 @@ class AgentDependencies:
                 api_key=self.settings.llm_api_key,
                 base_url=self.settings.llm_base_url
             )
+    
+    async def get_db_pool(self) -> asyncpg.Pool:
+        """Get database pool with lazy initialization."""
+        if not self.db_pool:
+            if not self.settings:
+                self.settings = load_settings()
+            
+            try:
+                self.db_pool = await asyncpg.create_pool(
+                    self.settings.database_url,
+                    min_size=self.settings.db_pool_min_size,
+                    max_size=self.settings.db_pool_max_size
+                )
+            except Exception as e:
+                print(f"Warning: Could not create database pool: {e}")
+                raise
+        
+        return self.db_pool
     
     async def cleanup(self):
         """Clean up external connections."""

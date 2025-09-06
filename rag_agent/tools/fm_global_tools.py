@@ -67,7 +67,9 @@ async def semantic_search_fm_global(
         query_embedding = await deps.get_embedding(query)
         
         # Execute search query
-        async with deps.db_pool.acquire() as conn:
+        # Get database pool lazily
+        db_pool = await deps.get_db_pool()
+        async with db_pool.acquire() as conn:
             query_sql = """
                 SELECT * FROM match_fm_global_vectors($1::vector, $2, $3, $4)
             """
@@ -143,7 +145,9 @@ async def hybrid_search_fm_global(
         query_embedding = await deps.get_embedding(query)
         
         # Execute hybrid search
-        async with deps.db_pool.acquire() as conn:
+        # Get database pool lazily
+        db_pool = await deps.get_db_pool()
+        async with db_pool.acquire() as conn:
             query_sql = """
                 SELECT * FROM hybrid_search_fm_global($1::vector, $2, $3, $4, $5)
             """
@@ -202,7 +206,9 @@ async def get_fm_global_references(
     try:
         deps = ctx.deps
         
-        async with deps.db_pool.acquire() as conn:
+        # Get database pool lazily
+        db_pool = await deps.get_db_pool()
+        async with db_pool.acquire() as conn:
             query_sql = """
                 SELECT * FROM get_fm_global_references_by_topic($1, $2)
             """
