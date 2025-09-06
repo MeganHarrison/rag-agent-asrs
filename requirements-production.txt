@@ -14,15 +14,17 @@ python-multipart
 rich
 psutil
 
+# Required for database operations
+pgvector
+numpy  # Required by pgvector
+
 # Optional - add back if needed
 # beautifulsoup4
 # langchain
 # langchain-community
 # langchain-core
 # langchain-text-splitters
-# numpy
 # pandas
-# pgvector
 # psycopg2-binary
 # requests
 # sqlalchemy
