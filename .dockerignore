@@ -1,0 +1,91 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Documentation
+*.md
+!README.md
+docs/
+examples/
+
+# Testing
+tests/
+test_*.py
+pytest.ini
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment files
+.env
+.env.*
+*.env.local
+*.env.development
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Development files
+*.sqlite
+*.db
+
+# Jupyter
+*.ipynb
+.ipynb_checkpoints/
+
+# Data files (if large)
+data/
+documents/
+*.csv
+*.json
+!package.json
+!package-lock.json
+
+# SQL files
+sql/
+*.sql
+
+# Deployment configs (not needed in Docker)
+render.yaml
+render-production.yaml
+railway.json
+nixpacks.toml
+.renderignore
+
+# Node (if any frontend)
+node_modules/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
