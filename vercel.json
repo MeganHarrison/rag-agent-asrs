@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/fm-global.py": {
+      "runtime": "python3.12"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/fm-global/(.*)",
+      "destination": "/api/fm-global"
+    }
+  ]
+}
