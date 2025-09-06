@@ -171,7 +171,8 @@ async def chat_sync(query: FMGlobalQuery):
         
         # Get response from agent
         try:
-            result = await fm_global_agent.run(full_prompt, deps=deps)
+            agent = fm_global_agent()  # Get the agent instance
+            result = await agent.run(full_prompt, deps=deps)
             if hasattr(result, 'output'):
                 response_text = result.output
             elif hasattr(result, 'data'):

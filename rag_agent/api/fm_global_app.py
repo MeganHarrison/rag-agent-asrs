@@ -144,7 +144,8 @@ async def chat_sync(query: FMGlobalQuery):
         full_prompt = "\n\n".join(prompt_parts)
         
         # Get response from FM Global agent
-        result = await fm_global_agent.run(full_prompt, deps=deps)
+        agent = fm_global_agent()  # Get the agent instance
+        result = await agent.run(full_prompt, deps=deps)
         response_text = result.data
         
         # Extract table and figure references (simple regex approach)
@@ -206,7 +207,8 @@ async def stream_fm_global_response(query: FMGlobalQuery) -> AsyncGenerator[str,
         figures_found = []
         
         # Stream the agent execution
-        async with fm_global_agent.iter(full_prompt, deps=deps) as run:
+        agent = fm_global_agent()  # Get the agent instance
+        async with agent.iter(full_prompt, deps=deps) as run:
             async for node in run:
                 
                 if Agent.is_tool_call_node(node):
