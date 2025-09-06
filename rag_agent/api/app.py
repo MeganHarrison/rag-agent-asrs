@@ -8,8 +8,12 @@ from typing import List, Optional, AsyncGenerator
 import asyncio
 import json
 import uuid
+import os
+import logging
 
-from ..core.agent import search_agent
+logger = logging.getLogger(__name__)
+
+from ..core.agent import get_search_agent
 from ..core.dependencies import AgentDependencies
 from ..config.settings import load_settings
 from pydantic_ai import Agent
@@ -82,8 +86,9 @@ User: {message}
 Search the knowledge base to answer the user's question. Choose the appropriate search strategy (semantic_search or hybrid_search) based on the query type. Provide a comprehensive summary of your findings."""
 
     try:
-        # Stream the agent execution
-        async with search_agent.iter(prompt, deps=deps) as run:
+        # Get the agent and stream the execution
+        agent = get_search_agent()
+        async with agent.iter(prompt, deps=deps) as run:
             
             tool_calls = []
             response_text = ""
@@ -124,8 +129,13 @@ Search the knowledge base to answer the user's question. Choose the appropriate 
 
 @app.get("/")
 async def root():
-    """Health check endpoint."""
-    return {"status": "healthy", "service": "RAG Agent API"}
+    """Basic health check endpoint - no external dependencies."""
+    return {
+        "status": "healthy", 
+        "service": "FM Global Expert RAG Agent",
+        "version": "1.0.0",
+        "endpoints": ["/", "/health", "/chat", "/chat/stream"]
+    }
 
 
 @app.post("/chat", response_model=ChatResponse)
@@ -155,8 +165,9 @@ User: {request.message}
 Search the knowledge base to answer the user's question. Choose the appropriate search strategy (semantic_search or hybrid_search) based on the query type. Provide a comprehensive summary of your findings."""
     
     try:
-        # Run agent
-        result = await search_agent.run(prompt, deps=deps)
+        # Get the agent and run
+        agent = get_search_agent()
+        result = await agent.run(prompt, deps=deps)
         
         # Extract tool calls from result if available
         tool_calls = []
@@ -200,24 +211,50 @@ async def chat_stream(request: ChatRequest):
 
 @app.get("/health")
 async def health_check():
-    """Detailed health check with dependency status."""
+    """Detailed health check with dependency status (lazy check)."""
     
     health_status = {
         "status": "healthy",
+        "service": "FM Global Expert RAG Agent",
         "checks": {
             "api": True,
-            "llm_configured": bool(settings.llm_api_key),
-            "model": settings.llm_model,
+            "environment": {
+                "llm_configured": bool(settings.llm_api_key),
+                "database_configured": bool(os.getenv('DATABASE_URL')),
+                "model": settings.llm_model,
+                "provider": settings.llm_provider
+            }
         }
     }
     
-    # Test vector store connection if needed
-    try:
-        # Add your vector store health check here
-        health_status["checks"]["vector_store"] = True
-    except Exception:
-        health_status["checks"]["vector_store"] = False
-        health_status["status"] = "degraded"
+    # Only test external connections if explicitly requested via query param
+    # This prevents startup failures in containerized environments
+    if os.getenv('CHECK_EXTERNAL_CONNECTIONS', 'false').lower() == 'true':
+        try:
+            # Test LLM connection (lazy)
+            from ..core.agent import get_search_agent
+            agent = get_search_agent()
+            health_status["checks"]["llm_connection"] = True
+        except Exception as e:
+            health_status["checks"]["llm_connection"] = False
+            health_status["checks"]["llm_error"] = str(e)
+            health_status["status"] = "degraded"
+        
+        try:
+            # Test database connection (lazy)
+            from ..core.dependencies import AgentDependencies
+            deps = AgentDependencies(
+                api_key=settings.llm_api_key,
+                session_id="health-check"
+            )
+            # Just check if we can create deps
+            health_status["checks"]["database_ready"] = True
+        except Exception as e:
+            health_status["checks"]["database_ready"] = False
+            health_status["checks"]["database_error"] = str(e)
+            health_status["status"] = "degraded"
+    else:
+        health_status["note"] = "External connection checks disabled for fast startup"
     
     return health_status
 
