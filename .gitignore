@@ -71,5 +71,5 @@ coverage.xml
 local_settings.py
 instance/
 
-# Documents (temporarily excluded if they contain sensitive data)
-# documents/
+# Documents (excluded from repository)
+documents/
