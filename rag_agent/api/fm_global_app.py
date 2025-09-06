@@ -173,9 +173,7 @@ async def stream_fm_global_response(query: FMGlobalQuery) -> AsyncGenerator[str,
     try:
         deps = await get_or_create_deps()
     except Exception as e:
-        yield f"data: {json.dumps({'error': f'Initialization failed: {str(e)}'})}
-
-"
+        yield f"data: {json.dumps({'error': f'Initialization failed: {str(e)}'})}\n\n"
         return
     
     try:

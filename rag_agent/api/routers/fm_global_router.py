@@ -55,10 +55,10 @@ async def fm_global_chat(query: FMGlobalQuery):
         agent = get_fm_global_agent()
         
         deps = AgentDependencies(
-            api_key=settings.llm_api_key,
-            session_id=session_id,
-            agent_type="fm_global"
+            settings=settings,
+            session_id=session_id
         )
+        await deps.initialize()
         
         # Build specialized prompt
         prompt = f"""As an FM Global 8-34 ASRS expert:
@@ -113,10 +113,10 @@ async def fm_global_stream(query: FMGlobalQuery):
             settings = load_settings()
             agent = get_fm_global_agent()
             deps = AgentDependencies(
-                api_key=settings.llm_api_key,
-                session_id=session_id,
-                agent_type="fm_global"
+                settings=settings,
+                session_id=session_id
             )
+            await deps.initialize()
             
             prompt = f"FM Global ASRS Expert Query: {query.query}"
             

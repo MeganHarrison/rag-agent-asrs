@@ -49,5 +49,5 @@ def get_fm_global_agent() -> Agent:
     return _fm_global_agent
 
 
-# For backward compatibility - create property that returns the agent
-fm_global_agent = property(lambda self: get_fm_global_agent())
+# For backward compatibility - direct function reference
+fm_global_agent = get_fm_global_agent

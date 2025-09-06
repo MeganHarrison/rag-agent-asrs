@@ -163,7 +163,7 @@ async def try_load_agent():
     
     try:
         # Only import when needed to avoid startup issues
-        from ..core.fm_global_agent import fm_global_agent
+        from ..core.fm_global_agent import get_fm_global_agent
         from ..core.dependencies import AgentDependencies
         from ..config.settings import load_settings
         
@@ -171,6 +171,9 @@ async def try_load_agent():
         settings = load_settings()
         deps = AgentDependencies(settings=settings)
         await deps.initialize()
+        
+        # Test agent creation
+        agent = get_fm_global_agent()
         
         agent_available = True
         return True
@@ -209,13 +212,16 @@ async def chat_sync(query: FMGlobalQuery):
     if await try_load_agent():
         try:
             # Import here to avoid startup issues
-            from ..core.fm_global_agent import fm_global_agent
+            from ..core.fm_global_agent import get_fm_global_agent
             from ..core.dependencies import AgentDependencies
             from ..config.settings import load_settings
             
             settings = load_settings()
             deps = AgentDependencies(settings=settings)
             await deps.initialize()
+            
+            # Get the agent instance
+            agent = get_fm_global_agent()
             
             # Build prompt
             context = "\n".join(query.conversation_history[-6:]) if query.conversation_history else ""
@@ -234,13 +240,9 @@ async def chat_sync(query: FMGlobalQuery):
             full_prompt = "\n\n".join(prompt_parts)
             
             # Get response from agent
-            result = await fm_global_agent.run(full_prompt, deps=deps)
-            if hasattr(result, 'output'):
-                response_text = result.output
-            elif hasattr(result, 'data'):
-                response_text = result.data
-            else:
-                response_text = str(result)
+            result = await agent.run(full_prompt, deps=deps)
+            # Pydantic AI v2 returns result.data as the main response
+            response_text = result.data
                 
             await deps.cleanup()
             
