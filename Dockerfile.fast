@@ -31,5 +31,5 @@ USER appuser
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT}/ || exit 1
 
-# Start
-CMD ["python", "start_server.py"]
+# Start with minimal server (fewer dependencies)
+CMD ["python", "start_server_minimal.py"]

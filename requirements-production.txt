@@ -3,6 +3,8 @@ anthropic
 asyncpg
 fastapi
 uvicorn[standard]
+httptools
+uvloop
 openai
 pydantic
 pydantic-ai
