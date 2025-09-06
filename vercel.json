@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "api/fm-global.py": {
-      "runtime": "@vercel/python@4.1.0"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/fm-global/(.*)",
