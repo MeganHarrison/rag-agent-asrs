@@ -1,0 +1,33 @@
+# Core dependencies only - for faster builds
+anthropic
+asyncpg
+fastapi
+uvicorn[standard]
+openai
+pydantic
+pydantic-ai
+pydantic-settings
+python-dotenv
+python-multipart
+rich
+psutil
+
+# Optional - add back if needed
+# beautifulsoup4
+# langchain
+# langchain-community
+# langchain-core
+# langchain-text-splitters
+# numpy
+# pandas
+# pgvector
+# psycopg2-binary
+# requests
+# sqlalchemy
+# tiktoken
+# groq
+# nltk
+# cohere
+# sentence-transformers  # HUGE - avoid if possible
+# scikit-learn
+# pyyaml

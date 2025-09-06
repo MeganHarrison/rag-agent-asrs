@@ -10,13 +10,22 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy requirements first for better caching
-COPY requirements.txt .
+# Use production requirements for faster builds
+COPY requirements-production.txt requirements.txt
 
 # Create virtual environment and install dependencies
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+
+# Upgrade pip and install wheel for faster builds
+RUN pip install --upgrade pip setuptools wheel
+
+# Install dependencies with optimizations
+RUN pip install --no-cache-dir \
+    --disable-pip-version-check \
+    --no-compile \
+    --progress-bar off \
+    -r requirements.txt
 
 # Production stage
 FROM python:3.11-slim
