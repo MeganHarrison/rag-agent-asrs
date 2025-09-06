@@ -1,7 +1,7 @@
 # Nixpacks configuration for Railway deployment
 
 [phases.setup]
-nixPkgs = ["python39", "postgresql_16.dev", "gcc"]
+nixPkgs = ["python39", "gcc"]
 
 [phases.install]
 cmds = [
