@@ -31,5 +31,5 @@ USER appuser
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT}/ || exit 1
 
-# Start with ultra-simple server for debugging
-CMD ["python", "-u", "simple_server.py"]
+# Start server (timeout_notify issue fixed)
+CMD ["python", "-u", "start_server.py"]

@@ -65,12 +65,9 @@ def start_server():
             port=port,
             log_level="info",
             reload=False,
-            # Disable access logs during startup to reduce noise
             access_log=True,
-            # Add timeout settings for production
+            # timeout_notify removed - not available in all uvicorn versions
             timeout_keep_alive=75,
-            timeout_notify=60,
-            # Use uvloop for better performance
             loop="uvloop"
         )
         

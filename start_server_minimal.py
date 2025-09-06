@@ -70,8 +70,7 @@ def start_server():
             host="0.0.0.0",
             port=port,
             log_level="info",
-            # Don't use uvloop if not available
-            loop="asyncio"  # Changed from "uvloop" to "asyncio"
+            loop="asyncio"
         )
         
     except Exception as e:
