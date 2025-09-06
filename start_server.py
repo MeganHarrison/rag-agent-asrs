@@ -48,8 +48,8 @@ def start_server():
             logger.warning("Running with incomplete configuration")
         
         # Import FastAPI app (lazy import to avoid early initialization)
-        # Use the ultra_safe version which has fallback responses
-        from rag_agent.api.fm_global_app_ultra_safe import app
+        # Use the regular app for full functionality
+        from rag_agent.api.fm_global_app import app
         import uvicorn
         
         logger.info("Server initialization complete")
