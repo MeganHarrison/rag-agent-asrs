@@ -62,6 +62,7 @@ class FMGlobalQuery(BaseModel):
     asrs_topic: Optional[str] = None  # fire_protection, seismic_design, rack_design, etc.
     design_focus: Optional[str] = None
     conversation_history: Optional[List[str]] = []
+    prompt_mode: Optional[str] = None  # "expert" or "guided" - determines conversation style
 
 
 class FMGlobalResponse(BaseModel):
@@ -143,8 +144,8 @@ async def chat_sync(query: FMGlobalQuery):
         
         full_prompt = "\n\n".join(prompt_parts)
         
-        # Get response from FM Global agent
-        agent = fm_global_agent()  # Get the agent instance
+        # Get response from FM Global agent with specified prompt mode
+        agent = fm_global_agent(mode=query.prompt_mode)  # Get the agent instance with mode
         result = await agent.run(full_prompt, deps=deps)
         response_text = result.data
         
@@ -206,8 +207,8 @@ async def stream_fm_global_response(query: FMGlobalQuery) -> AsyncGenerator[str,
         tables_found = []
         figures_found = []
         
-        # Stream the agent execution
-        agent = fm_global_agent()  # Get the agent instance
+        # Stream the agent execution with specified prompt mode
+        agent = fm_global_agent(mode=query.prompt_mode)  # Get the agent instance with mode
         async with agent.iter(full_prompt, deps=deps) as run:
             async for node in run:
                 

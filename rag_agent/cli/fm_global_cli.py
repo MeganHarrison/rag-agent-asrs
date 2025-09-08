@@ -12,14 +12,14 @@ from rich.prompt import Prompt
 from rich.markdown import Markdown
 
 from pydantic_ai import Agent
-from ..core.fm_global_agent import fm_global_agent
+from ..core.fm_global_agent import get_fm_global_agent
 from ..core.dependencies import AgentDependencies
 from ..config.settings import load_settings
 
 console = Console()
 
 
-async def stream_fm_global_interaction(user_input: str, conversation_history: List[str], deps: AgentDependencies) -> tuple[str, str]:
+async def stream_fm_global_interaction(user_input: str, conversation_history: List[str], deps: AgentDependencies, prompt_mode: str = None) -> tuple[str, str]:
     """Stream FM Global agent interaction with real-time tool call display."""
     
     try:
@@ -33,8 +33,11 @@ User: {user_input}
 
 As an FM Global 8-34 ASRS expert, search the knowledge base and provide a comprehensive answer with specific table and figure references. Focus on practical guidance for ASRS fire protection design and cost optimization opportunities."""
 
+        # Get agent with specified mode
+        agent = get_fm_global_agent(mode=prompt_mode)
+        
         # Stream the agent execution
-        async with fm_global_agent.iter(prompt, deps=deps) as run:
+        async with agent.iter(prompt, deps=deps) as run:
             
             response_text = ""
             
@@ -106,6 +109,24 @@ async def main():
             border_style="blue"
         ))
         
+        # Ask for prompt mode preference
+        console.print("\n[bold yellow]Select conversation mode:[/bold yellow]")
+        console.print("1. [bold]Expert Mode[/bold] - Direct Q&A with instant answers")
+        console.print("2. [bold]Guided Mode[/bold] - Step-by-step design process")
+        console.print("3. [bold]Standard Mode[/bold] - Comprehensive consulting approach\n")
+        
+        mode_choice = Prompt.ask("[bold green]Enter mode (1/2/3)[/bold green]", default="1")
+        
+        prompt_mode = None  # Default
+        if mode_choice == "1":
+            prompt_mode = "expert"
+            console.print("[green]✓ Expert Q&A Mode activated[/green]\n")
+        elif mode_choice == "2":
+            prompt_mode = "guided"
+            console.print("[green]✓ Guided Design Mode activated[/green]\n")
+        else:
+            console.print("[green]✓ Standard Consulting Mode activated[/green]\n")
+        
         conversation_history = []
         
         while True:
@@ -128,6 +149,7 @@ async def main():
 • **help** - Show this help message
 • **info** - Display system configuration
 • **clear** - Clear the screen
+• **mode** - Switch conversation mode (expert/guided/standard)
 • **exit/quit** - Exit the application
 
 **Example Questions:**
@@ -164,9 +186,28 @@ async def main():
                     console.clear()
                     continue
                 
-                # Process the query
+                elif user_input.lower() == 'mode':
+                    console.print("\n[bold yellow]Select new conversation mode:[/bold yellow]")
+                    console.print("1. [bold]Expert Mode[/bold] - Direct Q&A with instant answers")
+                    console.print("2. [bold]Guided Mode[/bold] - Step-by-step design process")
+                    console.print("3. [bold]Standard Mode[/bold] - Comprehensive consulting approach\n")
+                    
+                    mode_choice = Prompt.ask("[bold green]Enter mode (1/2/3)[/bold green]", default="1")
+                    
+                    if mode_choice == "1":
+                        prompt_mode = "expert"
+                        console.print("[green]✓ Switched to Expert Q&A Mode[/green]\n")
+                    elif mode_choice == "2":
+                        prompt_mode = "guided"
+                        console.print("[green]✓ Switched to Guided Design Mode[/green]\n")
+                    else:
+                        prompt_mode = None
+                        console.print("[green]✓ Switched to Standard Consulting Mode[/green]\n")
+                    continue
+                
+                # Process the query with selected prompt mode
                 response_text, status = await stream_fm_global_interaction(
-                    user_input, conversation_history, deps
+                    user_input, conversation_history, deps, prompt_mode
                 )
                 
                 if status == "success" and response_text:
