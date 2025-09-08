@@ -123,7 +123,7 @@ async def intelligent_fm_global_search(
         
         # 2. Expand query if enabled
         query_variations = [query]
-        if use_query_expansion and strategy != SearchStrategy.SPECIFIC_REFERENCE:
+        if use_query_expansion and strategy != SearchStrategy.HYBRID_TEXT_HEAVY:
             query_variations = await query_expander.expand_query(query)
             logger.info(f"Expanded query to {len(query_variations)} variations")
         
@@ -281,6 +281,9 @@ async def _semantic_search_internal(
     # Generate embedding
     query_embedding = await deps.get_embedding(query)
     
+    # Convert embedding to PostgreSQL vector string format
+    embedding_str = '[' + ','.join(map(str, query_embedding)) + ']'
+    
     # Get database pool
     db_pool = await deps.get_db_pool()
     async with db_pool.acquire() as conn:
@@ -293,12 +296,12 @@ async def _semantic_search_internal(
                     SELECT id FROM fm_global_vectors WHERE {where_clause}
                 )
             """
-            rows = await conn.fetch(query_sql, query_embedding, match_count, *params)
+            rows = await conn.fetch(query_sql, embedding_str, match_count, *params)
         else:
             query_sql = """
                 SELECT * FROM match_fm_global_vectors($1::vector, $2, NULL, NULL)
             """
-            rows = await conn.fetch(query_sql, query_embedding, match_count)
+            rows = await conn.fetch(query_sql, embedding_str, match_count)
         
         results = []
         for row in rows:
@@ -336,19 +339,23 @@ async def _hybrid_search_internal(
     # Generate embedding
     query_embedding = await deps.get_embedding(query)
     
+    # Convert embedding to PostgreSQL vector string format
+    embedding_str = '[' + ','.join(map(str, query_embedding)) + ']'
+    
     # Get database pool
     db_pool = await deps.get_db_pool()
     async with db_pool.acquire() as conn:
         query_sql = """
-            SELECT * FROM hybrid_search_fm_global($1::vector, $2, $3, $4, NULL)
+            SELECT * FROM hybrid_search_fm_global($1::vector, $2, $3, $4, $5)
         """
         
         rows = await conn.fetch(
             query_sql,
-            query_embedding,
+            embedding_str,
             query,
             match_count,
-            text_weight
+            text_weight,
+            filters.asrs_type[0] if filters and filters.asrs_type else None
         )
         
         results = []
