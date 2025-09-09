@@ -147,7 +147,14 @@ async def chat_sync(query: FMGlobalQuery):
         # Get response from FM Global agent with specified prompt mode
         agent = fm_global_agent(mode=query.prompt_mode)  # Get the agent instance with mode
         result = await agent.run(full_prompt, deps=deps)
-        response_text = result.data
+        
+        # Extract response text from result
+        if hasattr(result, 'response'):
+            response_text = str(result.response)
+        elif hasattr(result, 'data'):
+            response_text = str(result.data)
+        else:
+            response_text = str(result)
         
         # Extract table and figure references (simple regex approach)
         import re
@@ -213,19 +220,33 @@ async def stream_fm_global_response(query: FMGlobalQuery) -> AsyncGenerator[str,
             async for node in run:
                 
                 if Agent.is_tool_call_node(node):
-                    tool_name = node.data.tool_name
+                    # Safely get tool name
+                    tool_name = None
+                    if hasattr(node, 'data') and hasattr(node.data, 'tool_name'):
+                        tool_name = node.data.tool_name
+                    elif hasattr(node, 'tool_name'):
+                        tool_name = node.tool_name
+                    
                     tool_friendly_names = {
                         'hybrid_search_fm_global': 'Searching FM Global 8-34 database',
                         'semantic_search_fm_global': 'Semantic search of FM Global content', 
                         'get_fm_global_references': 'Finding tables and figures',
                         'asrs_design_search': 'ASRS design analysis'
                     }
-                    tool_display = tool_friendly_names.get(tool_name, tool_name)
+                    tool_display = tool_friendly_names.get(tool_name, tool_name or 'Processing')
                     yield f"data: {json.dumps({'type': 'tool_call', 'tool': tool_display})}\n\n"
                 
                 elif Agent.is_model_response_node(node):
-                    # Stream response chunks
-                    new_content = node.data.content[len(response_text):]
+                    # Stream response chunks - safely get content
+                    content = None
+                    if hasattr(node, 'data') and hasattr(node.data, 'content'):
+                        content = node.data.content
+                    elif hasattr(node, 'content'):
+                        content = node.content
+                    else:
+                        content = str(node)
+                    
+                    new_content = content[len(response_text):] if content else ""
                     if new_content:
                         response_text += new_content
                         
