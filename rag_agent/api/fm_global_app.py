@@ -148,13 +148,26 @@ async def chat_sync(query: FMGlobalQuery):
         agent = fm_global_agent(mode=query.prompt_mode)  # Get the agent instance with mode
         result = await agent.run(full_prompt, deps=deps)
         
-        # Extract response text from result
-        if hasattr(result, 'response'):
+        # Extract response text from result - Pydantic AI returns data attribute
+        if hasattr(result, 'data'):
+            response_text = result.data
+        elif hasattr(result, 'response'):
             response_text = str(result.response)
-        elif hasattr(result, 'data'):
-            response_text = str(result.data)
+        elif hasattr(result, 'output'):
+            response_text = str(result.output)
         else:
-            response_text = str(result)
+            # Last resort - try to extract from string representation
+            result_str = str(result)
+            if "output='" in result_str or 'output="' in result_str:
+                # Extract content between output=' and the ending '
+                import re
+                match = re.search(r"output=['\"](.+?)['\"]", result_str, re.DOTALL)
+                if match:
+                    response_text = match.group(1)
+                else:
+                    response_text = result_str
+            else:
+                response_text = result_str
         
         # Extract table and figure references (simple regex approach)
         import re
