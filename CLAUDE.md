@@ -196,6 +196,37 @@ The interactive CLI (rag_agent/cli/cli.py) provides:
 
 ## Key Development Patterns
 
+### CRITICAL: Pydantic AI AgentRunResult Handling
+**⚠️ IMPORTANT: When using `agent.run()`, the result object structure varies between Pydantic AI versions.**
+
+Always use this safe extraction pattern to avoid AttributeError:
+```python
+result = await agent.run(prompt, deps=deps)
+
+# CORRECT: Safe extraction with fallbacks
+if hasattr(result, 'data'):
+    response_text = result.data  # Most common - direct access
+elif hasattr(result, 'response'):
+    response_text = str(result.response)
+elif hasattr(result, 'output'):
+    response_text = str(result.output)
+else:
+    # Extract from string representation as last resort
+    result_str = str(result)
+    # Use regex to extract if needed
+```
+
+**NEVER do this:**
+```python
+# ❌ WRONG - Will cause AttributeError
+response_text = result.data  # May not exist!
+
+# ❌ WRONG - Includes wrapper text
+response_text = str(result)  # Returns "AgentRunResult(output='...')"
+```
+
+See `/documentation/technical/pydantic-ai-agentrunresult-fix.md` for complete details.
+
 ### Agent Tool Registration
 ```python
 from pydantic_ai import Agent
